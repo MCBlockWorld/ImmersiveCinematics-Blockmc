@@ -23,14 +23,12 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import static com.example.immersive_cinematics.ImmersiveCinematics.MC;
-
 public class CinematicCameraEntity extends LocalPlayer {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final ClientPacketListener NETWORK_HANDLER = new ClientPacketListener(
-            MC,
+            Minecraft.getInstance(),
             (Screen) null,
             new Connection(PacketFlow.CLIENTBOUND),
             (ServerData) null,
@@ -45,11 +43,11 @@ public class CinematicCameraEntity extends LocalPlayer {
     private float currentFov = 70.0f;
 
     public CinematicCameraEntity(int id) {
-        super(MC,
-                MC.level,
+        super(Minecraft.getInstance(),
+                Minecraft.getInstance().level,
                 NETWORK_HANDLER,
-                MC.player.getStats(),
-                MC.player.getRecipeBook(),
+                Minecraft.getInstance().player.getStats(),
+                Minecraft.getInstance().player.getRecipeBook(),
                 false,
                 false);
 
@@ -57,7 +55,7 @@ public class CinematicCameraEntity extends LocalPlayer {
         setPose(Pose.SWIMMING);
         getAbilities().flying = true;
         noPhysics = true; // 物理隔离 - 允许穿过方块
-        input = new KeyboardInput(MC.options);
+        input = new KeyboardInput(Minecraft.getInstance().options);
     }
 
     public float getCurrentFov() {
@@ -73,7 +71,7 @@ public class CinematicCameraEntity extends LocalPlayer {
             // 使用反射调用私有的 addEntity 方法
             Method addEntityMethod = ClientLevel.class.getDeclaredMethod("addEntity", int.class, Entity.class);
             addEntityMethod.setAccessible(true);
-            addEntityMethod.invoke(MC.level, getId(), this);
+            addEntityMethod.invoke(Minecraft.getInstance().level, getId(), this);
         } catch (Exception e) {
             LOGGER.error("Failed to spawn cinematic camera entity", e);
         }
@@ -84,7 +82,7 @@ public class CinematicCameraEntity extends LocalPlayer {
             // 使用反射调用私有的 removeEntity 方法
             Method removeEntityMethod = ClientLevel.class.getDeclaredMethod("removeEntity", int.class, Entity.RemovalReason.class);
             removeEntityMethod.setAccessible(true);
-            removeEntityMethod.invoke(MC.level, getId(), Entity.RemovalReason.DISCARDED);
+            removeEntityMethod.invoke(Minecraft.getInstance().level, getId(), Entity.RemovalReason.DISCARDED);
         } catch (Exception e) {
             LOGGER.error("Failed to despawn cinematic camera entity", e);
         }
@@ -107,17 +105,17 @@ public class CinematicCameraEntity extends LocalPlayer {
 
     @Override
     public boolean isUsingItem() {
-        return MC.player.isUsingItem();
+        return Minecraft.getInstance().player.isUsingItem();
     }
 
     @Override
     public int getUseItemRemainingTicks() {
-        return MC.player.getUseItemRemainingTicks();
+        return Minecraft.getInstance().player.getUseItemRemainingTicks();
     }
 
     @Override
     public float getAttackAnim(float tickDelta) {
-        return MC.player.getAttackAnim(tickDelta);
+        return Minecraft.getInstance().player.getAttackAnim(tickDelta);
     }
 
     @Override

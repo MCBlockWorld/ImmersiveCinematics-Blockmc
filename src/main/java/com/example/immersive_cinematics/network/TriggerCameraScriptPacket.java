@@ -1,6 +1,7 @@
 package com.example.immersive_cinematics.network;
 
 import com.example.immersive_cinematics.director.TimelineProcessor;
+import com.example.immersive_cinematics.director.CameraScriptStorage;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -41,6 +42,7 @@ public class TriggerCameraScriptPacket {
         context.enqueueWork(() -> {
             // 在客户端线程上执行
             if (net.minecraft.client.Minecraft.getInstance().player != null) {
+                CameraScriptStorage.getInstance().hotReloadCameraScript(message.scriptName);
                 TimelineProcessor.getInstance().startCameraScript(
                         net.minecraft.client.Minecraft.getInstance().player, message.scriptName);
             }

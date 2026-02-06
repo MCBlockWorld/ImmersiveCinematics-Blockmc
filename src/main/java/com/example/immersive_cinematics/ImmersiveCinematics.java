@@ -1,20 +1,25 @@
 package com.example.immersive_cinematics;
 
+import com.example.immersive_cinematics.Config;
+import net.minecraft.client.Minecraft;
+
+
 import com.example.immersive_cinematics.handler.KeyHandler;
 import com.example.immersive_cinematics.handler.CommandHandler;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -25,9 +30,6 @@ public class ImmersiveCinematics {
     public static final String MODID = "immersive_cinematics";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
-    // Minecraft instance
-    public static final Minecraft MC = Minecraft.getInstance();
-
     public ImmersiveCinematics() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
@@ -36,14 +38,19 @@ public class ImmersiveCinematics {
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
-        // 注册时间轴处理器到事件总线
-        MinecraftForge.EVENT_BUS.register(com.example.immersive_cinematics.director.TimelineProcessor.getInstance());
         // 注册世界事件检测器到事件总线（关键：这是监听器能正常工作的必要条件）
         MinecraftForge.EVENT_BUS.register(com.example.immersive_cinematics.trigger.WorldEventDetector.getInstance());
         LOGGER.info("WorldEventDetector registered to Forge EVENT_BUS");
+        DistExecutor.safeRunWhenOn(Dist.CLIENT, () -> ClientOnly::registerClientEvents);
 
         // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+    }
+
+    private static final class ClientOnly {
+        private static void registerClientEvents() {
+            MinecraftForge.EVENT_BUS.register(com.example.immersive_cinematics.director.TimelineProcessor.getInstance());
+        }
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
@@ -69,9 +76,14 @@ public class ImmersiveCinematics {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
-
-        // 注册自定义指令
-        CommandHandler.registerCommands(event.getServer().getCommands().getDispatcher());
+        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER) {
+            com.example.immersive_cinematics.handler.ServerCommandHandler.registerCommands(
+                event.getServer().getCommands().getDispatcher()
+            );
+        } else {
+            // 集成服务器：客户端可用时注册完整命令
+            CommandHandler.registerCommands(event.getServer().getCommands().getDispatcher());
+        }
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent

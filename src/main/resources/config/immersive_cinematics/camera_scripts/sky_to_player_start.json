@@ -1,0 +1,28 @@
+{
+  "name": "sky_to_player_start",
+  "description": "游戏开始时从空中平滑降落到玩家视角",
+  "id": "8b7d8b9f-1a2b-4c73-9e3f-6c2b1c0f3e1a",
+  "shotRules": [
+    {
+      "ruleName": "sky_drop_to_player",
+      "routes": [
+        {
+          "routeName": "sky_smooth_drop",
+          "pathType": "SMOOTH",
+          "duration": 5.0,
+          "startFOV": 75,
+          "endFOV": 70,
+          "startYaw": 0,
+          "startPitch": 60,
+          "endYaw": 0,
+          "endPitch": 0,
+          "height": 50.0,
+          "heading": 0
+        }
+      ],
+      "triggerConditions": [],
+      "isLooping": false,
+      "delay": 0.5
+    }
+  ]
+}

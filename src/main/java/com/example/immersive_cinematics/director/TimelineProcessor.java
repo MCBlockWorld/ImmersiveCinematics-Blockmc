@@ -273,6 +273,18 @@ public class TimelineProcessor {
             if (startPos == null && Minecraft.getInstance().player != null) {
                 startPos = Minecraft.getInstance().player.position();
             }
+            // 如果没有指定终点位置，使用玩家当前位置
+            if (endPos == null && Minecraft.getInstance().player != null) {
+                endPos = Minecraft.getInstance().player.position();
+            }
+
+            // 允许直接/平滑路径使用 height 作为起始高度偏移
+            if (route.getStartPosition() == null
+                && (route.getPathType() == CameraScript.PathType.DIRECT || route.getPathType() == CameraScript.PathType.SMOOTH)
+                && startPos != null
+                && route.getHeight() != 0.0) {
+                startPos = startPos.add(0.0, route.getHeight(), 0.0);
+            }
 
             // 根据路径类型创建对应的IMovementPath
             switch (route.getPathType()) {

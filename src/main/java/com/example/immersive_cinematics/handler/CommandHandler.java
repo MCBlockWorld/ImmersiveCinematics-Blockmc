@@ -21,6 +21,9 @@ public class CommandHandler {
                 .then(Commands.literal("list")
                         .executes(ctx -> executeListCameraScripts(ctx))
                 )
+                .then(Commands.literal("reload")
+                        .executes(ctx -> executeReloadCameraScripts(ctx))
+                )
                 .then(Commands.literal("play")
                         .then(Commands.argument("name", com.mojang.brigadier.arguments.StringArgumentType.string())
                                 .executes(ctx -> executePlayCameraScript(ctx))
@@ -967,6 +970,12 @@ public class CommandHandler {
             source.sendFailure(net.minecraft.network.chat.Component.literal("此命令只能在客户端执行"));
         }
 
+        return 1;
+    }
+
+    private static int executeReloadCameraScripts(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        CameraScriptStorage.getInstance().hotReload();
+        context.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.literal("镜头脚本已重载"), false);
         return 1;
     }
 }
